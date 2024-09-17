@@ -15,38 +15,49 @@ class HashMap {
           hashCode = primeNumber * hashCode + key.charCodeAt(i);
           hashCode = hashCode % this.bucket_size;
         }
-     
         return hashCode;
       } 
     
     set(key, value) {
-        let index = this.hash(key);
+        let bucketIndex = this.hash(key);
         
-        if (index < 0 || index >= this.buckets.length) {
+        if (bucketIndex < 0 || bucketIndex >= this.buckets.length) {
             throw new Error("Trying to access index out of bound");
           }
-        
-          if(this.buckets[index] === undefined) {
+        //New linked list in bucket if it is empty, with key-value pair as head node
+        if(this.buckets[bucketIndex] === undefined) {
             const linkedList = new LinkedList();
-            this.buckets[index] = linkedList;
+            this.buckets[bucketIndex] = linkedList;
             linkedList.prepend(key, value);
-
-        } else {
-            const linkedList = this.buckets[index];
-            linkedList.append(key, value);
+        //Overwrite value if key already exists, else append to linked list
+        } else{
+            const linkedList = this.buckets[bucketIndex];  //store linked list as variable
+            if(linkedList.contains(key)) {
+                let tmp = linkedList.head();
+                do {
+                    if(tmp.key === key) tmp.value =  value; 
+                    if(tmp.nextNode != null) tmp = tmp.nextNode; 
+                } while(tmp.nextNode != null);
+            } else {
+                linkedList.append(key, value);
+            }
         }
     }
 
     get(key) {
-        let index = this.hash(key);
-
-        if (index < 0 || index >= this.buckets.length) {
+        let bucketIndex = this.hash(key);
+        let value = null;
+        if (bucketIndex < 0 || bucketIndex >= this.buckets.length) {
             throw new Error("Trying to access index out of bound");
           }
-
-        //use method has(key) to check if exists first
-        //if exists --> go through bucket finding the value/index in linked list?
-
+        let bucket = this.buckets[bucketIndex]; 
+        if(bucket != undefined){
+            if(bucket.contains(key)){
+                const node = bucket.at(bucket.find(key));
+                value = node.value;
+            }
+        }
+        return value;   
     }
 
     has(key) {
@@ -61,11 +72,29 @@ class HashMap {
     }
 
     remove(key) {
-
+        let bucketIndex = this.hash(key);
+        let boolean;
+        if (bucketIndex < 0 || bucketIndex >= this.buckets.length) {
+            throw new Error("Trying to access index out of bound");
+          }
+        const bucket = this.buckets[bucketIndex];
+        if(!bucket || !bucket.contains(key)){
+            boolean = false;
+        } else {
+            const listIndex = bucket.find(key);
+            bucket.removeAt(listIndex);
+            boolean = true;
+        }
+        return boolean;   
     }
 
     length() {
-        //use keys() count
+        const keys = this.keys();
+        let i=0;
+        keys.forEach(item => {
+            i++;
+        })
+        return i;
     }
 
     clear() {
@@ -73,30 +102,29 @@ class HashMap {
     }
 
     keys() {
-        const keysArray = [];
+        let keysArray = [];
         this.buckets.forEach(bucket => {
-            if(bucket != undefined) {     //Go through each bucket that is not empty
+            if(bucket.headNode) {     //Go through each bucket that is not empty or null
                 let tmp = bucket.head();
-                keysArray.push(tmp.key);
-                while(tmp.nextNode != null){
-                    keysArray.push(tmp.key);
-                    tmp = tmp.nextNode;
-                }
+                //add key to array, and traverse to next node if not null
+                do {
+                    keysArray.push(tmp.key);; 
+                    if(tmp.nextNode != null) tmp = tmp.nextNode; 
+                } while(tmp.nextNode != null);
             }
         });
         return keysArray;
     }
 
     values() {
-        const valuesArray = [];
+        let valuesArray = [];
         this.buckets.forEach(bucket => {
             if(bucket != undefined) {     //Go through each bucket that is not empty
                 let tmp = bucket.head();
-                keysArray.push(tmp.values);
-                while(tmp.nextNode != null){    //Go through each node in linked list adding keys
-                    keysArray.push(tmp.values);
-                    tmp = tmp.nextNode;
-                }
+                do {
+                    valuesArray.push(tmp.value);; 
+                    if(tmp.nextNode != null) tmp = tmp.nextNode; 
+                } while(tmp.nextNode != null);
             }
         });
         return valuesArray;
@@ -114,5 +142,9 @@ test.set('elephant', 'gray');
 test.set('frog', 'green');
 test.set('grape', 'purple');
 test.set('frog', 'blue');
-console.log(test.has('cat'));
-console.log(test.has('grape'));
+
+console.log(test.get('frog'));
+console.log(test.keys());
+test.remove('grape');
+console.log(test.keys());
+

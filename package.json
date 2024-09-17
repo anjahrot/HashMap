@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Javascript program learning how to code a hash table with methods",
-  "main": "index.js",
+  "main": "hashmap.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

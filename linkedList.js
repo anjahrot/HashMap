@@ -46,7 +46,8 @@ export default class LinkedList {
         }
         return tmp;
     }
-
+    
+    //Return nodes value at given index in linked list //problem med denne metode, viss fleire??
     at(index) {
         let tmp = this.headNode;
         for(let i=0;i<(index-1);i++) {
@@ -81,10 +82,34 @@ export default class LinkedList {
     find(key) {
         const length = this.size();
         let tmp = this.headNode;
-        for(let i=1;i<length;i++){
+        for(let i=1;i<=length;i++){
             if(tmp.key === key) return i;
             tmp = tmp.nextNode;
         }
         return null;
     }
+
+    removeAt(index){
+        if(index === 1) {
+            let nodeAfter = this.at(index+1);
+            this.headNode = nodeAfter;
+        }
+        else if(index > 1 && this.size() >= index) {
+            let nodeBefore = this.at(index-1);
+            let nodeRemove = this.at(index);
+            nodeBefore.nextNode = nodeRemove.nextNode;
+        }else{
+            console.error("Error occured:", "List index does not exist");
+        }
+    }
+
 }
+
+// const list = new LinkedList;
+// list.append('pig', 'orange');
+// list.append('rat', 'grey');
+// console.log(list.size());
+// console.log(list.contains('pig'));
+// console.log(list.find('rat'));
+// console.log(list.removeAt(list.find('rat')));
+// console.log(list.size());
