@@ -1,10 +1,11 @@
 import LinkedList from "./linkedList.js";
 
 class HashMap {
-    constructor() {
-        this.buckets = new Array(16); 
-        this.bucket_size = 16;
+    constructor(bucket_size = 16) {
+        this.buckets = new Array(bucket_size); 
+        this.bucket_size = bucket_size;
         this.loadFactor = 0.75; 
+        this.capacity = 0;
     }
 
     hash(key) {
@@ -29,6 +30,7 @@ class HashMap {
             const linkedList = new LinkedList();
             this.buckets[bucketIndex] = linkedList;
             linkedList.prepend(key, value);
+            this.capacity++;
         //Overwrite value if key already exists, else append to linked list
         } else{
             const linkedList = this.buckets[bucketIndex];  //store linked list as variable
@@ -40,8 +42,26 @@ class HashMap {
                 } while(tmp.nextNode != null);
             } else {
                 linkedList.append(key, value);
+                this.capacity++;
             }
         }
+        if(this.capacity > this.bucket_size*this.loadFactor) {
+            console.log('Increase buckets');
+            this.growBuckets();
+        }
+    }
+
+    growBuckets() {
+        const newHashMap = new HashMap(2*this.bucket_size);
+        const entries = this.entries();
+        //change bucket_size before new hash in set-method
+        this.bucket_size = 2*this.bucket_size;
+        entries.forEach(item => {
+            let key = item[0];
+            let value = item[1]; 
+            newHashMap.set(key, value);
+        })
+        this.buckets = newHashMap.buckets; //Copy buckets
     }
 
     get(key) {
@@ -51,12 +71,12 @@ class HashMap {
             throw new Error("Trying to access index out of bound");
           }
         let bucket = this.buckets[bucketIndex]; 
-        if(bucket != undefined){
-            if(bucket.contains(key)){
-                const node = bucket.at(bucket.find(key));
-                value = node.value;
-            }
+        
+        if(bucket.contains(key)){
+            const node = bucket.at(bucket.find(key));
+            value = node.value;
         }
+        
         return value;   
     }
 
@@ -78,7 +98,7 @@ class HashMap {
             throw new Error("Trying to access index out of bound");
           }
         const bucket = this.buckets[bucketIndex];
-        if(!bucket || !bucket.contains(key)){
+        if(!bucket.contains(key)){
             boolean = false;
         } else {
             const listIndex = bucket.find(key);
@@ -98,13 +118,13 @@ class HashMap {
     }
 
     clear() {
-
+        this.buckets = new Array(16);
     }
 
     keys() {
         let keysArray = [];
         this.buckets.forEach(bucket => {
-            if(bucket.headNode) {     //Go through each bucket that is not empty or null
+            if(bucket.headNode) {     //Go through each bucket that does not have headNode = null
                 let tmp = bucket.head();
                 //add key to array, and traverse to next node if not null
                 do {
@@ -119,7 +139,7 @@ class HashMap {
     values() {
         let valuesArray = [];
         this.buckets.forEach(bucket => {
-            if(bucket != undefined) {     //Go through each bucket that is not empty
+            if(bucket.headNode) {     //Go through each bucket that is not empty - headnode truthy
                 let tmp = bucket.head();
                 do {
                     valuesArray.push(tmp.value);; 
@@ -130,6 +150,15 @@ class HashMap {
         return valuesArray;
     }
 
+    entries () {
+        let array = [];
+        const keys = this.keys();
+        const values = this.values();
+        for(let i=0;i<keys.length;i++){
+            array.push([keys[i], values[i]]);
+        }
+        return array;
+    }
 
 }
 
@@ -141,10 +170,11 @@ test.set('dog', 'brown');
 test.set('elephant', 'gray');
 test.set('frog', 'green');
 test.set('grape', 'purple');
-test.set('frog', 'blue');
-
-console.log(test.get('frog'));
-console.log(test.keys());
-test.remove('grape');
-console.log(test.keys());
-
+test.set('hat', 'black')
+test.set('ice cream', 'white')
+test.set('jacket', 'blue')
+test.set('kite', 'pink')
+test.set('lion', 'golden')
+console.log(test);
+test.set('moon', 'silver')
+console.log(test);
