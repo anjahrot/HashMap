@@ -13,8 +13,7 @@ class HashMap {
            
         const primeNumber = 31;
         for (let i = 0; i < key.length; i++) {
-          hashCode = primeNumber * hashCode + key.charCodeAt(i);
-          hashCode = hashCode % this.bucket_size;
+          hashCode = (primeNumber * hashCode + key.charCodeAt(i)) % this.bucket_size;
         }
         return hashCode;
       } 
@@ -46,7 +45,6 @@ class HashMap {
             }
         }
         if(this.capacity > this.bucket_size*this.loadFactor) {
-            console.log('Increase buckets');
             this.growBuckets();
         }
     }
@@ -117,8 +115,10 @@ class HashMap {
         return i;
     }
 
-    clear() {
-        this.buckets = new Array(16);
+    clear() { 
+        this.bucket_size = 16;
+        this.buckets = new Array(this.bucket_size);
+        this.capacity = 0;  
     }
 
     keys() {
@@ -126,11 +126,12 @@ class HashMap {
         this.buckets.forEach(bucket => {
             if(bucket.headNode) {     //Go through each bucket that does not have headNode = null
                 let tmp = bucket.head();
+                keysArray.push(tmp.key);
                 //add key to array, and traverse to next node if not null
-                do {
-                    keysArray.push(tmp.key);; 
-                    if(tmp.nextNode != null) tmp = tmp.nextNode; 
-                } while(tmp.nextNode != null);
+                while(tmp.nextNode != null) {
+                    tmp = tmp.nextNode; 
+                    keysArray.push(tmp.key);
+                }
             }
         });
         return keysArray;
@@ -141,10 +142,11 @@ class HashMap {
         this.buckets.forEach(bucket => {
             if(bucket.headNode) {     //Go through each bucket that is not empty - headnode truthy
                 let tmp = bucket.head();
-                do {
-                    valuesArray.push(tmp.value);; 
-                    if(tmp.nextNode != null) tmp = tmp.nextNode; 
-                } while(tmp.nextNode != null);
+                valuesArray.push(tmp.value);
+                while(tmp.nextNode != null) {
+                    tmp = tmp.nextNode; 
+                    valuesArray.push(tmp.value);
+                }
             }
         });
         return valuesArray;
@@ -170,11 +172,19 @@ test.set('dog', 'brown');
 test.set('elephant', 'gray');
 test.set('frog', 'green');
 test.set('grape', 'purple');
-test.set('hat', 'black')
-test.set('ice cream', 'white')
-test.set('jacket', 'blue')
-test.set('kite', 'pink')
-test.set('lion', 'golden')
+test.set('hat', 'black');
+test.set('ice cream', 'white');
+test.set('jacket', 'blue');
+test.set('kite', 'pink');
+test.set('lion', 'golden');
+test.set('moon', 'silver');
+test.set('frog', 'blue');
+console.log(test.length());
+console.log(test.remove('moon'));
+test.clear();
+console.log(test.entries());
 console.log(test);
-test.set('moon', 'silver')
-console.log(test);
+test.set('moon', 'silver');
+console.log(test.entries());
+
+
